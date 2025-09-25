@@ -5,38 +5,150 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CGPA Calculator</title>
 <style>
-  body { font-family: Arial, sans-serif; padding: 20px; }
-  table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-  th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
-  input { padding: 5px; margin: 5px 0; }
-  button { padding: 5px 10px; margin: 5px; }
+  /* ======= Base Styling ======= */
+  body {
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    padding: 20px;
+    background: linear-gradient(135deg, #74b9ff, #a29bfe);
+    color: #333;
+    transition: background 0.5s, color 0.5s;
+  }
+  .container {
+    max-width: 800px;
+    margin: auto;
+    background: #ffffffd9;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    transition: background 0.5s;
+  }
+  h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #2d3436;
+  }
+
+  /* ======= Input Section ======= */
+  .input-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  input {
+    padding: 10px;
+    width: 150px;
+    border: 2px solid #0984e3;
+    border-radius: 8px;
+    outline: none;
+    transition: 0.3s;
+  }
+  input:focus {
+    border-color: #6c5ce7;
+    box-shadow: 0 0 8px #6c5ce7;
+  }
+
+  /* ======= Buttons ======= */
+  button {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    background: #0984e3;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+  }
+  button:hover {
+    background: #6c5ce7;
+    transform: translateY(-2px);
+  }
+  .toggle-mode {
+    float: right;
+    margin-bottom: 10px;
+    background: #636e72;
+  }
+
+  /* ======= Table ======= */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  th, td {
+    border: 1px solid #dfe6e9;
+    padding: 12px;
+    text-align: center;
+    transition: background 0.3s;
+  }
+  th {
+    background: #0984e3;
+    color: white;
+  }
+  tr:nth-child(even) {
+    background: #f1f2f6;
+  }
+  tr.highlight {
+    animation: flash 1s ease-in-out;
+  }
+
+  @keyframes flash {
+    0% {background-color: #55efc4;}
+    100% {background-color: inherit;}
+  }
+
+  /* ======= Dark Mode ======= */
+  body.dark {
+    background: linear-gradient(135deg, #2d3436, #000000);
+    color: #dfe6e9;
+  }
+  body.dark .container {
+    background: #2d3436;
+  }
+  body.dark th {
+    background: #6c5ce7;
+  }
+  body.dark input {
+    background: #636e72;
+    color: #fff;
+    border-color: #6c5ce7;
+  }
+  body.dark table tr:nth-child(even) {
+    background: #3d3d3d;
+  }
 </style>
 </head>
 <body>
 
-<h1>CGPA Calculator</h1>
+<div class="container">
+  <button class="toggle-mode" onclick="toggleMode()">🌙 Dark/Light</button>
+  <h1>🌟 CGPA Calculator 🌟</h1>
 
-<div>
-  <input type="text" id="courseName" placeholder="Course Name">
-  <input type="number" id="courseCredit" placeholder="Credit" min="0">
-  <input type="number" id="courseCGPA" placeholder="CGPA (max 4)" min="0" max="4" step="0.01">
-  <button onclick="addCourse()">Add Course</button>
+  <div class="input-group">
+    <input type="text" id="courseName" placeholder="Course Name">
+    <input type="number" id="courseCredit" placeholder="Credit" min="0">
+    <input type="number" id="courseCGPA" placeholder="CGPA (max 4)" min="0" max="4" step="0.01">
+    <button onclick="addCourse()">➕ Add Course</button>
+  </div>
+
+  <table id="courseTable">
+    <thead>
+      <tr>
+        <th>Course</th>
+        <th>Credit</th>
+        <th>CGPA</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <h3>Total Credits: <span id="totalCredits">0</span></h3>
+  <h3>CGPA: <span id="cgpa">0.00</span></h3>
 </div>
-
-<table id="courseTable">
-  <thead>
-    <tr>
-      <th>Course</th>
-      <th>Credit</th>
-      <th>CGPA</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
-
-<h3>Total Credits: <span id="totalCredits">0</span></h3>
-<h3>CGPA: <span id="cgpa">0.00</span></h3>
 
 <script>
 let courses = [];
@@ -56,8 +168,8 @@ function updateTable() {
       <td>${course.credit}</td>
       <td>${course.cgpa.toFixed(2)}</td>
       <td>
-        <button onclick="editCourse(${index})">Edit</button>
-        <button onclick="removeCourse(${index})">Remove</button>
+        <button onclick="editCourse(${index})">✏️ Edit</button>
+        <button onclick="removeCourse(${index})">🗑️ Remove</button>
       </td>
     `;
     tbody.appendChild(row);
@@ -74,7 +186,7 @@ function addCourse() {
   const cgpa = parseFloat(document.getElementById("courseCGPA").value);
 
   if (!name || isNaN(credit) || isNaN(cgpa) || cgpa > 4) {
-    alert("Please enter valid course details (CGPA max 4).");
+    alert("⚠️ Please enter valid course details (CGPA max 4).");
     return;
   }
 
@@ -83,6 +195,13 @@ function addCourse() {
   document.getElementById("courseCredit").value = "";
   document.getElementById("courseCGPA").value = "";
   updateTable();
+
+  // Highlight last added row
+  const rows = document.querySelectorAll("#courseTable tbody tr");
+  if (rows.length) {
+    rows[rows.length - 1].classList.add("highlight");
+    setTimeout(() => rows[rows.length - 1].classList.remove("highlight"), 1000);
+  }
 }
 
 function removeCourse(index) {
@@ -100,8 +219,12 @@ function editCourse(index) {
     courses[index] = { name: newName, credit: newCredit, cgpa: newCGPA };
     updateTable();
   } else {
-    alert("Invalid input!");
+    alert("⚠️ Invalid input!");
   }
+}
+
+function toggleMode() {
+  document.body.classList.toggle("dark");
 }
 </script>
 
